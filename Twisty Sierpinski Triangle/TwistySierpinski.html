@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+<title>Twisty Sierpinski</title>
+
+
+<script id="vertex-shader" type="x-shader/x-vertex">
+attribute vec4 vPosition;
+uniform float theta;
+varying vec4 vColor;
+
+void
+main()
+{
+    float twist = sin(theta);
+    float distanceFromOrigin = sqrt(dot(vPosition, vPosition));
+
+    float s = sin(theta + twist * distanceFromOrigin);
+    float c = cos(theta + twist * distanceFromOrigin);
+
+    gl_Position.x = -s * vPosition.y + c * vPosition.x;
+    gl_Position.y =  s * vPosition.x + c * vPosition.y;
+    gl_Position.z = 0.0;
+    gl_Position.w = 1.0;
+
+    vColor = gl_Position; // vPosition;
+}
+</script>
+
+<script id="fragment-shader" type="x-shader/x-fragment">
+precision mediump float;
+
+varying vec4 vColor;
+
+void
+main()
+{
+    gl_FragColor = vColor;
+    
+    gl_FragColor += (1.0, 0.5, 0.5, 0.0);
+    gl_FragColor.x *= 1.7;
+    gl_FragColor.y *= 1.7;
+    gl_FragColor.z += 0.1;
+}
+</script>
+
+<script type="text/javascript" src="Common/webgl-utils.js"></script>
+<script type="text/javascript" src="Common/initShaders.js"></script>
+<script type="text/javascript" src="Common/MV.js"></script>
+<script type="text/javascript" src="twistysierpinski.js"></script>
+</head>   
+
+<body>
+<canvas id="gl-canvas" width="1000" height="1000">
+Webgl unsupported
+</canvas>
+</body>
+</html>
