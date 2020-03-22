@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+
+<style>
+	* { 
+		margin: 0;
+		padding: 0;
+	}
+
+	canvas {
+		width: 100%;
+		height: 100%;
+		position: absolute;
+		float: left;
+		z-index: -10;
+	}
+</style>
+
+<html>
+	<canvas id="canvas"> </canvas>
+	<!--
+	<form>
+		<label for="x">x:</label>
+		<input id="x" type="text" name="x_input">
+
+		<label for="y">y:</label>
+		<input id="y" type="text" name="y_input">
+
+		<label for="z">z:</label>
+		<input id="z" type="text" name="z_input">
+	</form>
+	-->
+
+	<script>
+		var canvas = document.getElementById("canvas");
+		canvas.height = window.innerHeight;
+		canvas.width = window.innerWidth;
+
+		var ctx = canvas.getContext("2d");
+
+		let Vector3 = function(x, y, z) {
+			this.x = parseFloat(x);
+			this.y = parseFloat(y);
+			this.z = parseFloat(z);
+		};
+
+		let Quaternion = function(vector, theta) {
+			this.x = vector.x * Math.sin(parseFloat(theta) / 2.0);
+			this.y = vector.y * Math.sin(parseFloat(theta) / 2.0);
+			this.z = vector.z * Math.sin(parseFloat(theta) / 2.0);
+			this.w = Math.cos(parseFloat(theta) / 2.0);
+		};
+
+		let Cube = function() {
+			this.vertices = [
+				new Vector3(-100, 100, 100),
+				new Vector3(100, 100, 100),
+				new Vector3(100, 100, -100),
+				new Vector3(-100, 100, -100),
+
+				new Vector3(-100, -100, 100),
+				new Vector3(100, -100, 100),
+				new Vector3(100, -100, -100),
+				new Vector3(-100, -100, -100)
+			]
+		};
+
+		function rotateAroundQuaternion(quat, vec) {
+			let mat11 = 1 - (2 * (Math.pow(quat.y, 2) + Math.pow(quat.z, 2)));
+			let mat12 = 2 * ((quat.x * quat.y) - (quat.z * quat.w));
+			let mat13 = 2 * ((quat.x * quat.z) + (quat.y * quat.w));
+
+			let mat21 = 2 * ((quat.x * quat.y) + (quat.z * quat.w));
+			let mat22 = 1 - (2 * (Math.pow(quat.x, 2) + Math.pow(quat.z, 2)));
+			let mat23 = 2 * ((quat.y * quat.z) - (quat.x * quat.w));
+
+			let mat31 = 2 * ((quat.x * quat.z) - (quat.y * quat.w));
+			let mat32 = 2 * ((quat.y * quat.z) + (quat.x * quat.w));
+			let mat33 = 1 - (2 * (Math.pow(quat.x, 2) + Math.pow(quat.y, 2)));
+
+			return new Vector3(
+					(vec.x * mat11) + (vec.y * mat12) + (vec.z * mat13),
+					(vec.x * mat21) + (vec.y * mat22) + (vec.z * mat23),
+					(vec.x * mat31) + (vec.y * mat32) + (vec.z * mat33)
+			);
+		}
+
+		var cube = new Cube();
+
+		setInterval(
+				function fixedUpdate() {
+					let rotationAxis = new Vector3(100, 100, 100);
+					let length = Math.sqrt(Math.pow(rotationAxis.x, 2) + Math.pow(rotationAxis.y, 2) + Math.pow(rotationAxis.z, 2));
+					let normalizedAxis = new Vector3(rotationAxis.x / length, rotationAxis.y / length, rotationAxis.z / length);
+
+					let quaternion = new Quaternion(normalizedAxis, 0.01);
+
+					for(let i = 0; i < 8; ++i) {
+						cube.vertices[i] = rotateAroundQuaternion(quaternion, cube.vertices[i]);
+					}
+				}
+			, 20);
+
+		const offset = 500;
+		function drawSquare(index) {
+
+			ctx.beginPath();
+			ctx.moveTo(cube.vertices[index].x + offset, cube.vertices[index].y + offset);
+			ctx.lineTo(cube.vertices[index + 1].x + offset, cube.vertices[index + 1].y + offset);
+			ctx.lineWidth = 3;
+			ctx.stroke();
+
+			ctx.beginPath();
+			ctx.moveTo(cube.vertices[index + 1].x + offset, cube.vertices[index + 1].y + offset);
+			ctx.lineTo(cube.vertices[index + 2].x + offset, cube.vertices[index + 2].y + offset);
+			ctx.lineWidth = 3;
+			ctx.stroke();
+
+			ctx.beginPath();
+			ctx.moveTo(cube.vertices[index + 2].x + offset, cube.vertices[index + 2].y + offset);
+			ctx.lineTo(cube.vertices[index + 3].x + offset, cube.vertices[index + 3].y + offset);
+			ctx.lineWidth = 3;
+			ctx.stroke();
+
+			ctx.beginPath();
+			ctx.moveTo(cube.vertices[index + 3].x + offset, cube.vertices[index + 3].y + offset);
+			ctx.lineTo(cube.vertices[index].x + offset, cube.vertices[index].y + offset);
+			ctx.lineWidth = 3;
+			ctx.stroke();
+		}
+
+		function draw() {
+			window.requestAnimationFrame(draw);
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+			drawSquare(0);
+			drawSquare(4);
+
+
+			ctx.beginPath();
+			ctx.moveTo(cube.vertices[0].x + offset, cube.vertices[0].y + offset);
+			ctx.lineTo(cube.vertices[4].x + offset, cube.vertices[4].y + offset);
+			ctx.lineWidth = 3;
+			ctx.stroke();
+
+			ctx.beginPath();
+			ctx.moveTo(cube.vertices[3].x + offset, cube.vertices[3].y + offset);
+			ctx.lineTo(cube.vertices[7].x + offset, cube.vertices[7].y + offset);
+			ctx.lineWidth = 3;
+			ctx.stroke();
+
+			ctx.beginPath();
+			ctx.moveTo(cube.vertices[1].x + offset, cube.vertices[1].y + offset);
+			ctx.lineTo(cube.vertices[5].x + offset, cube.vertices[5].y + offset);
+			ctx.lineWidth = 3;
+			ctx.stroke();
+
+			ctx.beginPath();
+			ctx.moveTo(cube.vertices[2].x + offset, cube.vertices[2].y + offset);
+			ctx.lineTo(cube.vertices[6].x + offset, cube.vertices[6].y + offset);
+			ctx.lineWidth = 3;
+			ctx.stroke();
+
+		}
+
+		draw(); 
+	</script>
+
+</html>
